@@ -1,0 +1,58 @@
+<======================= TEXT ========================>
+<ThemedView style={styles.titleContainer}>
+        <ThemedText type="title">Welcome! Helloooo</ThemedText>
+        <HelloWave />
+      </ThemedView>
+
+<======================= IMAGES ========================>
+
+## can also be embeeded into something like <ParrallaxScrollView headerImage=...>
+<Image
+source={require('@/assets/images/partial-react-logo.png')}
+style={styles.reactLogo}/>
+
+<======================= STYLING =======================>
+
+## creates styles for file, access via <xxx style={styles.stepContainer}>
+const styles = StyleSheet.create({
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  }
+  reactLogo: {
+    height: 178,
+    width: 290,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+  },
+});
+
+<======================= LAYOUT =======================>
+
+export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const [loaded] = useFonts({
+    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  });
+
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
+
+  if (!loaded) {
+    return null;
+  }
+
+  return (
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <StatusBar style="auto" />
+    </ThemeProvider>
+  );
