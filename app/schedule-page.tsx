@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TextInput, Button, ScrollView } from "react-nat
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { generateSchedule } from './generate';
+import { RFPercentage } from 'react-native-responsive-fontsize';
 
 type ScheduleScreenProps = {
   navigation: NavigationProp<any>;
@@ -40,10 +41,8 @@ const ScheduleScreen = ({ navigation }: ScheduleScreenProps) => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Schedule Maker</Text>
-      <Text style={styles.subtitle}>For each entry, add a recurring 
-        event that you would like fit into your schedule. Indicate any preferences you have
-        in regards to time, day of the week, and frequency. Also indicate whether there
-        are any logistical details that are non-negotiable (class on monday 2-3pm) </Text>
+      <Text style={styles.subtitle}>Add anything you'd like to incorporate into your schedule 
+        and include important information like time and frequency</Text>
       {inputs.map((input, index) => (
         <TextInput
           key={index}
@@ -53,7 +52,7 @@ const ScheduleScreen = ({ navigation }: ScheduleScreenProps) => {
           placeholder={`Input ${index + 1}`}
         />
       ))}
-      <View style={{ flexDirection: 'row', marginTop: 10 }}>
+      <View style={styles.buttonRow}>
         <View style={styles.buttonWrap}>
             <Button title="Add Event" onPress={handleAddInput}/>
         </View>
@@ -79,19 +78,21 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   buttonWrap: {
-    padding: 5
+    flexGrow: 1,
+    padding: 8,
   },
   buttonRow: {
-    padding:10,
+    alignContent: 'center',
     flexDirection: 'row', 
-    marginTop: 10
+    marginTop: 10, width: '60%',
+    flexWrap: 'wrap',
   },
   title: {
-    fontSize: 32,
+    fontSize: RFPercentage(4),
     fontWeight: "bold",
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: RFPercentage(2),
     width: '60%',
     color: "#38434D",
     marginBottom: 20,

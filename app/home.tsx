@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, Button } from "react-native";
 import { NavigationProp } from '@react-navigation/native';
+import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 type HomeScreenProps = {
   navigation: NavigationProp<any>;
@@ -34,7 +35,7 @@ const styles = StyleSheet.create({
       marginHorizontal: "auto",
     },
     title: {
-      fontSize: 64,
+      fontSize: RFPercentage(5),
       fontWeight: "bold",
     },
     subtitle: {

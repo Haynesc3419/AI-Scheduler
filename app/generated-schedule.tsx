@@ -1,13 +1,17 @@
 import React, {useState} from 'react';
-import { View, Text, FlatList, StyleSheet, ScrollView, TextInput, Button } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ScrollView, TextInput, Button, TouchableOpacity } from 'react-native';
 import dayjs from 'dayjs'; // Install this for date formatting: npm install dayjs
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { generateSchedule } from './generate';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RFPercentage, RFValue } from 'react-native-responsive-fontsize';
+import { Dimensions } from 'react-native';
 
 type GeneratedScreenProps = {
   navigation: NavigationProp<any>;
 };
+
+const { width, height } = Dimensions.get('window');
 
 const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
   const route = useRoute<RouteProp<any, 'GeneratedScreen'>>();
@@ -42,16 +46,40 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
     });
   }
 
+  const [collapsed, setCollapsed] = useState<{ [key: string]: boolean }>({});
+
+  const toggleCollapse = (id: string) => {
+    setCollapsed((prev) => ({
+      ...prev,
+      [id]: !prev[id], // Toggle only the selected text
+    }));
+  };
+
   // Render each item
-  const renderItem = ({ item }: { item: { id: string; title: string; week_day: string; start_time: string; end_time: string; description: string;} }) => (
+  const renderItem = ({ item }: { item: { id: string; title: string; week_day: string; start_time: string; end_time: string; description: string;} }) => {
+    const isCollapsed = collapsed[item.id];
+
+    return (
     <View style={styles.card}>
       <Text style={styles.title}>{item.title}</Text>
       <Text style={styles.time}>
         {dayjs(item.start_time).format('h:mm A')} - {dayjs(item.end_time).format('h:mm A')}
       </Text>
-      <Text style={styles.description}>{item.description}</Text>
+      {isCollapsed ? (
+        <TouchableOpacity onPress={() => toggleCollapse(item.id)}>
+          <Text style={styles.description}>+</Text>
+        </TouchableOpacity>
+      ) : (
+        <View>
+          <Text style={styles.description}>{item.description}</Text>
+          <TouchableOpacity onPress={() => toggleCollapse(item.id)}>
+            <Text style={styles.description}>-</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
-  );
+    );
+  };
 
   return (
     <ScrollView horizontal contentContainerStyle={styles.rootContainer}>
@@ -137,17 +165,17 @@ const styles = StyleSheet.create({
       marginHorizontal: 5,
     },
     title: {
-        fontSize: 18,
+        fontSize: RFPercentage(1.5),
         fontWeight: 'bold',
         marginBottom: 5,
     },
     time: {
-        fontSize: 14,
+        fontSize: RFPercentage(1),
         color: '#555',
         marginBottom: 5,
     },
     description: {
-        fontSize: 14,
+        fontSize: RFPercentage(1),
         color: '#333',
         marginBottom: 5,
     },
