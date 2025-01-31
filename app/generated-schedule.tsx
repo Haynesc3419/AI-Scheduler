@@ -6,6 +6,7 @@ import { generateSchedule } from './generate';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RFPercentage, RFValue } from 'react-native-responsive-fontsize';
 import { Dimensions } from 'react-native';
+import { IoIosAddCircleOutline, IoIosRemoveCircleOutline, IoMdColorFill } from "react-icons/io";
 
 type GeneratedScreenProps = {
   navigation: NavigationProp<any>;
@@ -46,7 +47,12 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
     });
   }
 
+  
+
   const [collapsed, setCollapsed] = useState<{ [key: string]: boolean }>({});
+
+  const colorWheel = ['#fdb1a1', '#fde0a1', '#f5fda1', '#bdfda1', '#a1fdcc', '#a1defd', '#b3a1fd', '#fda1f9']
+  const [colors, setColor] = useState<{[key: string]: number}>({});
 
   const toggleCollapse = (id: string) => {
     setCollapsed((prev) => ({
@@ -55,30 +61,39 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
     }));
   };
 
+
+
   // Render each item
   const renderItem = ({ item }: { item: { id: string; title: string; week_day: string; start_time: string; end_time: string; description: string;} }) => {
     const isCollapsed = collapsed[item.id];
 
     return (
-    <View style={styles.card}>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.time}>
-        {dayjs(item.start_time).format('h:mm A')} - {dayjs(item.end_time).format('h:mm A')}
-      </Text>
-      {isCollapsed ? (
-        <TouchableOpacity onPress={() => toggleCollapse(item.id)}>
-          <Text style={styles.description}>+</Text>
-        </TouchableOpacity>
-      ) : (
-        <View>
-          <Text style={styles.description}>{item.description}</Text>
-          <TouchableOpacity onPress={() => toggleCollapse(item.id)}>
-            <Text style={styles.description}>-</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
-    );
+      <View style={[styles.card, { backgroundColor: colorWheel[colors[item.id] % colorWheel.length]}]}>
+          <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-end'}}>
+            <View>
+              <TouchableOpacity onPress={() => setColor((prev) => ({...prev, [item.id]: (prev[item.id] ? prev[item.id] : 0) + 1}))}>
+                <IoMdColorFill/>
+              </TouchableOpacity>
+            </View>
+
+            <View>
+              <TouchableOpacity onPress={() => toggleCollapse(item.id)}>
+                {isCollapsed ? <IoIosRemoveCircleOutline/> : <IoIosAddCircleOutline/>}
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View style={[styles.title, {display: 'flex', flexDirection: 'row', flex: 2}]}>
+            <Text style={[{flexGrow: 5, flex: 1, flexShrink: 1}, styles.title]}>
+              {item.title}
+            </Text>
+          </View>
+        <Text style={styles.time}>
+          {dayjs(item.start_time).format('h:mm A')} - {dayjs(item.end_time).format('h:mm A')}
+        </Text>
+
+        {isCollapsed ? <View></View> : <Text style={styles.description}>{item.description}</Text>}
+      </View>
+      );
   };
 
   return (
