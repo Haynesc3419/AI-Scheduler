@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { View, Text, FlatList, StyleSheet, ScrollView, TextInput, Button, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Modal, ScrollView, TextInput, Alert, Button, TouchableOpacity } from 'react-native';
 import dayjs from 'dayjs'; // Install this for date formatting: npm install dayjs
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { generateSchedule } from './generate';
@@ -8,6 +8,8 @@ import { RFPercentage, RFValue } from 'react-native-responsive-fontsize';
 import { Dimensions } from 'react-native';
 import { IoIosAddCircleOutline, IoIosRemoveCircleOutline, IoMdColorFill } from "react-icons/io";
 
+// TODO: bug when regenerate then edit the json, it deletes any regenerated data
+// TODO: ensure seperate IDs for events that are similar/identical (aka gym, work, etc)
 type GeneratedScreenProps = {
   navigation: NavigationProp<any>;
 };
@@ -30,12 +32,16 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
     .sort((a: { start_time: string }, b: { start_time: string }) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()),
   }));
 
+  const [showDetails, setShowDetails] = useState(false);
+  const [sched, setSched] = useState(schedule.scheduleJson);
   const [inputs, setInputs] = useState('');
 
   const handleInputChange = (text: string) => {
     const newInputs = text
     setInputs(newInputs);
   };
+
+  
 
   const handleRegenerateSchedule = () => {
     const oldInput = [schedule.scheduleJson.toString()];
@@ -45,6 +51,18 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
     }).catch((error) => {
         console.error("Error generating schedule: ", error);
     });
+  }
+
+  const handleSave = () => {
+    try {
+      JSON.parse(sched);
+      navigation.navigate('GeneratedScreen', { navigation, scheduleJson: sched });
+    } catch (e) {
+      Alert.alert('Invalid JSON format. Please correct it and try again.');
+      console.log('alertt');
+      setSched(schedule.scheduleJson);
+      return;
+    }
   }
 
   
@@ -116,86 +134,129 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
         <View style={styles.buttonWrap}>
           <Button title="Regenerate" onPress={() => handleRegenerateSchedule()} />
         </View>
+        <View style={styles.buttonWrap}>
+          <Button title="Details" onPress={() => setShowDetails(true)} />
+        </View>
         <TextInput
-                  style={styles.input}
+                  style={[styles.input]}
                   value={inputs}
                   onChangeText={(text) => handleInputChange(text)}
                   placeholder={`Insert any changes and regenerate'`}
         />
       </View>
+      <Modal visible={showDetails} transparent={true} animationType="fade">
+        <View style={styles.modalContainer}>
+          <Text style={styles.title}>Edit Schedule JSON</Text>
+          <TextInput 
+            style={[styles.input, {justifyContent: 'center', alignItems: 'center', width: '60%', height: '60%'}]} 
+            multiline
+            numberOfLines={10}
+            onChangeText={(text) => setSched(text)}
+            value={sched}
+          />
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            <View style={styles.buttonWrap}>
+              <Button title="Save" onPress={() => {handleSave()}} />
+            </View>
+
+            <View style={styles.buttonWrap}> 
+              <Button title="Close" onPress={() => setShowDetails(false)} />
+            </View>
+
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
     
   );
 }
 
 const styles = StyleSheet.create({
-    rootContainer: {
-      flexDirection: 'column',
-      width: '100%',
-    },
-    buttonWrap: {
-      padding: 5
-    },
-    inputRow: {
-      flexDirection: 'row',
-      padding: 10,
-    },
-    container: {
-        padding: 10,
-        backgroundColor: '#f5f5f5',
-    },
-    card: {
-        backgroundColor: '#ffffff',
-        padding: 15,
-        borderRadius: 8,
-        marginBottom: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    input: {
-      height: 40,
-      borderColor: 'gray',
-      borderWidth: 1,
-      marginBottom: 10,
-      width: '60%',
-      paddingHorizontal: 10,
-    },
-    dayTitle: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      marginBottom: 10,
-      textAlign: 'center',
-    },
-    weekContainer: {
-      flexDirection: 'row',
-      padding: 10,
-      backgroundColor: '#f5f5f5',
-      flexGrow: 1,
-    },
-    dayContainer: {
-      flex: 1,
-      marginHorizontal: 5,
-    },
-    title: {
-        fontSize: RFPercentage(1.5),
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-    time: {
-        fontSize: RFPercentage(1),
-        color: '#555',
-        marginBottom: 5,
-    },
-    description: {
-        fontSize: RFPercentage(1),
-        color: '#333',
-        marginBottom: 5,
-    },
-    location: {
-        fontSize: 14,
-    }});
+  modalContainer: {
+    margin: 'auto',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '80%',
+    height: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    borderColor: 'black',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
+    position: 'absolute',
+    top: '10%',
+    left: '10%',
+  },
+  rootContainer: {
+    flexDirection: 'column',
+    width: '100%',
+  },
+  buttonWrap: {
+    padding: 5
+  },
+  inputRow: {
+    flexDirection: 'row',
+    padding: 10,
+  },
+  container: {
+    padding: 10,
+    backgroundColor: '#f5f5f5',
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    width: '60%',
+    paddingHorizontal: 10,
+  },
+  dayTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  weekContainer: {
+    flexDirection: 'row',
+    padding: 10,
+    backgroundColor: '#f5f5f5',
+    flexGrow: 1,
+  },
+  dayContainer: {
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  title: {
+    fontSize: RFPercentage(1.5),
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  time: {
+    fontSize: RFPercentage(1),
+    color: '#555',
+    marginBottom: 5,
+  },
+  description: {
+    fontSize: RFPercentage(1),
+    color: '#333',
+    marginBottom: 5,
+  },
+  location: {
+    fontSize: 14,
+  }});
 
     export default GeneratedScreen;
