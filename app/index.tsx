@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from "./home";
 import ScheduleScreen from "./schedule-page";
 import GeneratedScreen from "./generated-schedule";
+import { ScrollView } from "react-native";
 
 export default function Page() {
   const Stack = createStackNavigator();

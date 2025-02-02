@@ -6,7 +6,8 @@ import { generateSchedule } from './generate';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RFPercentage, RFValue } from 'react-native-responsive-fontsize';
 import { Dimensions } from 'react-native';
-import { IoIosAddCircleOutline, IoIosRemoveCircleOutline, IoMdColorFill } from "react-icons/io";
+import { IoIosAddCircleOutline, IoIosRemoveCircleOutline, IoMdColorFill, IoIosTrash, IoIosBuild } from "react-icons/io";
+import { set } from 'react-native-reanimated';
 
 // TODO: bug when regenerate then edit the json, it deletes any regenerated data
 // TODO: ensure seperate IDs for events that are similar/identical (aka gym, work, etc)
@@ -33,15 +34,31 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
   }));
 
   const [showDetails, setShowDetails] = useState(false);
+
+  const [showEditEventModal, setShowEditEventModal] = useState(false);
+  const [focusedEvent, setFocusedEvent] = useState<string>("");
+  const [focusedEventJson, setFocusedEventJson] = useState<any>({});
+
   const [sched, setSched] = useState(schedule.scheduleJson);
   const [inputs, setInputs] = useState('');
+  const [jsonError, setJsonError] = useState(false);
 
   const handleInputChange = (text: string) => {
     const newInputs = text
     setInputs(newInputs);
   };
 
-  
+  const saveEvent = (newEvent: any) => {
+    const updatedSchedule = scheduleJson.schedule.map((event: any) => 
+      event.id === newEvent.id ? newEvent : event
+    );
+    navigation.navigate('GeneratedScreen', { navigation, scheduleJson: JSON.stringify({schedule: updatedSchedule}) });
+  }
+
+  const deleteEvent = (id: string) => {
+    const updatedSchedule = scheduleJson.schedule.filter((event: any) => event.id !== id);
+    navigation.navigate('GeneratedScreen', { navigation, scheduleJson: JSON.stringify({ schedule: updatedSchedule }) });
+  }
 
   const handleRegenerateSchedule = () => {
     const oldInput = [schedule.scheduleJson.toString()];
@@ -55,11 +72,12 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
 
   const handleSave = () => {
     try {
+      // check if parse returns errors
       JSON.parse(sched);
       navigation.navigate('GeneratedScreen', { navigation, scheduleJson: sched });
+      setJsonError(false);
     } catch (e) {
-      Alert.alert('Invalid JSON format. Please correct it and try again.');
-      console.log('alertt');
+      setJsonError(true);
       setSched(schedule.scheduleJson);
       return;
     }
@@ -99,6 +117,18 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
                 {isCollapsed ? <IoIosRemoveCircleOutline/> : <IoIosAddCircleOutline/>}
               </TouchableOpacity>
             </View>
+
+            <View>
+              <TouchableOpacity onPress={() => {setFocusedEvent(item.id); setShowEditEventModal(true)}}>
+                <IoIosBuild/>
+              </TouchableOpacity>
+            </View>
+
+            <View>
+              <TouchableOpacity onPress={() => deleteEvent(item.id)}>
+                <IoIosTrash/>
+              </TouchableOpacity>
+            </View>
           </View>
           <View style={[styles.title, {display: 'flex', flexDirection: 'row', flex: 2}]}>
             <Text style={[{flexGrow: 5, flex: 1, flexShrink: 1}, styles.title]}>
@@ -115,22 +145,25 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
   };
 
   return (
-    <ScrollView horizontal contentContainerStyle={styles.rootContainer}>
-      <View style={styles.weekContainer}>
-      {groupedByDay.map(day => (
-        <View key={day.day} style={styles.dayContainer}>
-          <Text style={styles.dayTitle}>{day.day}</Text>
-          <FlatList
-            data={day.events}
-            renderItem={renderItem}
-            keyExtractor={(event) => event.id}
-            contentContainerStyle={styles.container}
-          />
+    <View style={styles.rootContainer}>
+      <ScrollView horizontal contentContainerStyle={styles.rootContainer}>
+        <View style={styles.weekContainer}>
+        {groupedByDay.map(day => (
+          <View key={day.day} style={styles.dayContainer}>
+            <Text style={styles.dayTitle}>{day.day}</Text>
+            <ScrollView style={{height: '90%'}}>
+            <FlatList
+              data={day.events}
+              renderItem={renderItem}
+              keyExtractor={(event) => event.id}
+              contentContainerStyle={styles.container}
+            />
+            </ScrollView>
+          </View>
+        ))}
         </View>
-      ))}
-      </View>
 
-      <View style={styles.inputRow}>
+        <View style={styles.inputRow}>
         <View style={styles.buttonWrap}>
           <Button title="Regenerate" onPress={() => handleRegenerateSchedule()} />
         </View>
@@ -154,6 +187,7 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
             onChangeText={(text) => setSched(text)}
             value={sched}
           />
+          <Text style={{color: 'red'}}>{jsonError && 'Invalid JSON format. Please correct it and try again.'}</Text>
           <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <View style={styles.buttonWrap}>
               <Button title="Save" onPress={() => {handleSave()}} />
@@ -166,7 +200,61 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
           </View>
         </View>
       </Modal>
-    </ScrollView>
+
+      <Modal visible={showEditEventModal} transparent={true} animationType="fade">
+        <View style={styles.modalContainer}>
+          <View style={{ width: '80%', padding: 20 }}>
+            <Text style={styles.title}>Edit Event</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Title"
+              value={scheduleJson.schedule.find((event: any) => event.id === focusedEvent)?.title || ''}
+              onChangeText={(text) => {
+                const updatedEvent = { ...scheduleJson.schedule.find((event: any) => event.id === focusedEvent), title: text };
+                saveEvent(updatedEvent);
+              }}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Description"
+              value={scheduleJson.schedule.find((event: any) => event.id === focusedEvent)?.description || ''}
+              onChangeText={(text) => {
+                const updatedEvent = { ...scheduleJson.schedule.find((event: any) => event.id === focusedEvent), description: text };
+                saveEvent(updatedEvent);
+              }}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Start Time"
+              value={scheduleJson.schedule.find((event: any) => event.id === focusedEvent)?.start_time || ''}
+              onChangeText={(text) => {
+                const updatedEvent = { ...scheduleJson.schedule.find((event: any) => event.id === focusedEvent), start_time: text };
+                saveEvent(updatedEvent);
+              }}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="End Time"
+              value={scheduleJson.schedule.find((event: any) => event.id === focusedEvent)?.end_time || ''}
+              onChangeText={(text) => {
+                const updatedEvent = { ...scheduleJson.schedule.find((event: any) => event.id === focusedEvent), end_time: text };
+                saveEvent(updatedEvent);
+              }}
+            />
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View style={styles.buttonWrap}>
+                <Button title="Save" onPress={() => setShowEditEventModal(false)} />
+              </View>
+              <View style={styles.buttonWrap}>
+                <Button title="Cancel" onPress={() => setShowEditEventModal(false)} />
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      </ScrollView>
+    </View>
+    
     
   );
 }
@@ -259,4 +347,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
   }});
 
-    export default GeneratedScreen;
+export default GeneratedScreen;
