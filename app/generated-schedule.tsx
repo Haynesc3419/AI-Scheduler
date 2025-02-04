@@ -10,7 +10,6 @@ import { IoIosAddCircleOutline, IoIosRemoveCircleOutline, IoMdColorFill, IoIosTr
 import { abs, set } from 'react-native-reanimated';
 
 // TODO: bug when regenerate then edit the json, it deletes any regenerated data
-// TODO: ensure seperate IDs for events that are similar/identical (aka gym, work, etc)
 // TODO: changing date does not change day
 type GeneratedScreenProps = {
   navigation: NavigationProp<any>;

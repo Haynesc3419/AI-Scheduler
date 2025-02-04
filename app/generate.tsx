@@ -22,6 +22,7 @@ export const generateSchedule = async (inputs: string[], changes?: string): Prom
                 '}' +
                 ']'+
             '}'+ 
+            'Have each event have its own id if they are on different days (even if they have the same name).' + 
             'Please generate a weekly schedule that fits all of these events in: "' +
             inputs.join(", ") +
             'NOTE: Do not include anything other than the JSON text in your response. I need to be able to parse it directly. Also send as a normal text response not formatted' +
