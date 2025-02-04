@@ -7,10 +7,11 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RFPercentage, RFValue } from 'react-native-responsive-fontsize';
 import { Dimensions } from 'react-native';
 import { IoIosAddCircleOutline, IoIosRemoveCircleOutline, IoMdColorFill, IoIosTrash, IoIosBuild } from "react-icons/io";
-import { set } from 'react-native-reanimated';
+import { abs, set } from 'react-native-reanimated';
 
 // TODO: bug when regenerate then edit the json, it deletes any regenerated data
 // TODO: ensure seperate IDs for events that are similar/identical (aka gym, work, etc)
+// TODO: changing date does not change day
 type GeneratedScreenProps = {
   navigation: NavigationProp<any>;
 };
@@ -145,13 +146,12 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
   };
 
   return (
-    <View style={styles.rootContainer}>
-      <ScrollView horizontal contentContainerStyle={styles.rootContainer}>
-        <View style={styles.weekContainer}>
+    <View style={[styles.rootContainer, {display: 'flex', }]}>
+        <View style={[styles.weekContainer, {height: height - 130, flexGrow: 9, }]}>
         {groupedByDay.map(day => (
-          <View key={day.day} style={styles.dayContainer}>
+          <View key={day.day} style={[styles.dayContainer]}>
             <Text style={styles.dayTitle}>{day.day}</Text>
-            <ScrollView style={{height: '90%'}}>
+            <ScrollView>
             <FlatList
               data={day.events}
               renderItem={renderItem}
@@ -163,6 +163,7 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
         ))}
         </View>
 
+      <View style={[{}]}>
         <View style={styles.inputRow}>
         <View style={styles.buttonWrap}>
           <Button title="Regenerate" onPress={() => handleRegenerateSchedule()} />
@@ -252,7 +253,7 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
           </View>
         </View>
       </Modal>
-      </ScrollView>
+      </View>
     </View>
     
     
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 10,
     backgroundColor: '#f5f5f5',
-    flexGrow: 1,
+    flexGrow: 9,
   },
   dayContainer: {
     flex: 1,
