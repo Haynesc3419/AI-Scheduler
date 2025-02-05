@@ -15,3 +15,7 @@ export const militaryToStandard = (time: string) => {
     const result = hour.toString() + ':' + minute + ' ' + modifier
     return result;
 }
+
+export const calculateDuration = (time1: string, time2: string) => {
+    return parseInt(time2.split(":")[0]) - parseInt(time1.split(":")[0]);
+}

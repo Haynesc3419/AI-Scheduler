@@ -8,11 +8,10 @@ import { RFPercentage, RFValue } from 'react-native-responsive-fontsize';
 import { Dimensions } from 'react-native';
 import { IoIosAddCircleOutline, IoIosRemoveCircleOutline, IoMdColorFill, IoIosTrash, IoIosBuild } from "react-icons/io";
 import { abs, set } from 'react-native-reanimated';
-import { militaryToStandard } from './time-utils'
+import { calculateDuration, militaryToStandard } from './time-utils'
 import { Picker } from '@react-native-picker/picker';
 
 // TODO: bug when regenerate then edit the json, it deletes any regenerated data
-// TODO: changing date does not change day
 type GeneratedScreenProps = {
   navigation: NavigationProp<any>;
 };
@@ -66,6 +65,7 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
     const oldInput = [schedule.scheduleJson.toString()];
     const response = generateSchedule(oldInput, inputs).then((response) => {
         console.log("gemini returned... " + response);
+        setSched(response)
         navigation.navigate('GeneratedScreen', { navigation, scheduleJson: response });
     }).catch((error) => {
         console.error("Error generating schedule: ", error);
