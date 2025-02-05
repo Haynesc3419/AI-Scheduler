@@ -17,12 +17,13 @@ export const generateSchedule = async (inputs: string[], changes?: string): Prom
                     '"title": "xxx",' +
                     '"description": "xxxx",' +
                     '"week_day": "xxx",' +
-                    '"start_time": "2025-01-18T09:00:00",' +
-                    '"end_time": "2025-01-18T10:00:00"' +
+                    '"start_time": "09:00",' +
+                    '"end_time": "10:00"' +
                 '}' +
                 ']'+
             '}'+ 
-            'Have each event have its own id if they are on different days (even if they have the same name).' + 
+            'Have each event have its own id if they are on different days (even if they have the same name). ' + 
+            'have the week day capitilized. ' +
             'Please generate a weekly schedule that fits all of these events in: "' +
             inputs.join(", ") +
             'NOTE: Do not include anything other than the JSON text in your response. I need to be able to parse it directly. Also send as a normal text response not formatted' +

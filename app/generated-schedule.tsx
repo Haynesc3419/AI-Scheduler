@@ -8,6 +8,8 @@ import { RFPercentage, RFValue } from 'react-native-responsive-fontsize';
 import { Dimensions } from 'react-native';
 import { IoIosAddCircleOutline, IoIosRemoveCircleOutline, IoMdColorFill, IoIosTrash, IoIosBuild } from "react-icons/io";
 import { abs, set } from 'react-native-reanimated';
+import { militaryToStandard } from './time-utils'
+import { Picker } from '@react-native-picker/picker';
 
 // TODO: bug when regenerate then edit the json, it deletes any regenerated data
 // TODO: changing date does not change day
@@ -105,16 +107,18 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
 
     return (
       <View style={[styles.card, { backgroundColor: colorWheel[colors[item.id] % colorWheel.length]}]}>
+
           <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-end'}}>
+            <View style={{justifyContent: 'flex-start'}}>
+              {item.description == '' ? '' :
+              <TouchableOpacity onPress={() => toggleCollapse(item.id)}>
+                 {isCollapsed ? <IoIosAddCircleOutline/> : <IoIosRemoveCircleOutline/>}
+              </TouchableOpacity>
+              }
+            </View>
             <View>
               <TouchableOpacity onPress={() => setColor((prev) => ({...prev, [item.id]: (prev[item.id] ? prev[item.id] : 0) + 1}))}>
                 <IoMdColorFill/>
-              </TouchableOpacity>
-            </View>
-
-            <View>
-              <TouchableOpacity onPress={() => toggleCollapse(item.id)}>
-                {isCollapsed ? <IoIosRemoveCircleOutline/> : <IoIosAddCircleOutline/>}
               </TouchableOpacity>
             </View>
 
@@ -136,7 +140,7 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
             </Text>
           </View>
         <Text style={styles.time}>
-          {dayjs(item.start_time).format('h:mm A')} - {dayjs(item.end_time).format('h:mm A')}
+          {militaryToStandard(item.start_time)} - {militaryToStandard(item.end_time)} 
         </Text>
 
         {isCollapsed ? <View></View> : <Text style={styles.description}>{item.description}</Text>}
@@ -223,6 +227,17 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
                 saveEvent(updatedEvent);
               }}
             />
+            <Picker
+              style={styles.picker}
+              selectedValue={scheduleJson.schedule.find((event: any) => event.id === focusedEvent)?.week_day || ''}
+              onValueChange={(value) => {
+                const updatedEvent = { ...scheduleJson.schedule.find((event: any) => event.id === focusedEvent), week_day: value };
+                saveEvent(updatedEvent);
+              }}>
+              {daysOfWeek.map(day => (
+                <Picker.Item key={day} label={day} value={day}></Picker.Item>
+              ))}
+            </Picker>
             <TextInput
               style={styles.input}
               placeholder="Start Time"
@@ -277,6 +292,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '10%',
     left: '10%',
+  },
+  picker: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    width: '60%',
+    paddingHorizontal: 10,
   },
   rootContainer: {
     flexDirection: 'column',
