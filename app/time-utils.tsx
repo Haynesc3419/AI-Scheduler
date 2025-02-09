@@ -19,3 +19,8 @@ export const militaryToStandard = (time: string) => {
 export const calculateDuration = (time1: string, time2: string) => {
     return parseInt(time2.split(":")[0]) - parseInt(time1.split(":")[0]);
 }
+
+// compares time using hour field
+export const compareTime = (time1: string, time2: string) => {
+    return parseInt(time1.replace(":", "")) - parseInt(time2.replace(":", ""))
+}

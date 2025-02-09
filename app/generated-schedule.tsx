@@ -8,10 +8,9 @@ import { RFPercentage, RFValue } from 'react-native-responsive-fontsize';
 import { Dimensions } from 'react-native';
 import { IoIosAddCircleOutline, IoIosRemoveCircleOutline, IoMdColorFill, IoIosTrash, IoIosBuild } from "react-icons/io";
 import { abs, set } from 'react-native-reanimated';
-import { calculateDuration, militaryToStandard } from './time-utils'
+import { calculateDuration, compareTime, militaryToStandard } from './time-utils'
 import { Picker } from '@react-native-picker/picker';
 
-// TODO: bug when regenerate then edit the json, it deletes any regenerated data
 type GeneratedScreenProps = {
   navigation: NavigationProp<any>;
 };
@@ -31,7 +30,7 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
   const groupedByDay = daysOfWeek.map(day => ({
     day,
     events: scheduleJson.schedule.filter((item: { week_day: string }) => item.week_day === day)
-    .sort((a: { start_time: string }, b: { start_time: string }) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()),
+    .sort((a: { start_time: string }, b: { start_time: string }) => compareTime(a.start_time, b.start_time)),
   }));
 
   const [showDetails, setShowDetails] = useState(false);
