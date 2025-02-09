@@ -24,3 +24,17 @@ export const calculateDuration = (time1: string, time2: string) => {
 export const compareTime = (time1: string, time2: string) => {
     return parseInt(time1.replace(":", "")) - parseInt(time2.replace(":", ""))
 }
+
+export const checkTimeValid = (time: string): boolean => {
+    try {
+        const spl = time.split(":");
+        return (
+            parseInt(spl[0]) >= 0 &&
+            parseInt(spl[1]) >= 0 &&
+            parseInt(spl[0]) <= 24 &&
+            parseInt(spl[1]) <= 60
+        );
+    } catch (e) {
+        return false
+    }
+}

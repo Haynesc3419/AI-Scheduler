@@ -8,7 +8,7 @@ import { RFPercentage, RFValue } from 'react-native-responsive-fontsize';
 import { Dimensions } from 'react-native';
 import { IoIosAddCircleOutline, IoIosRemoveCircleOutline, IoMdColorFill, IoIosTrash, IoIosBuild } from "react-icons/io";
 import { abs, set } from 'react-native-reanimated';
-import { calculateDuration, compareTime, militaryToStandard } from './time-utils'
+import { calculateDuration, checkTimeValid, compareTime, militaryToStandard } from './time-utils'
 import { Picker } from '@react-native-picker/picker';
 
 type GeneratedScreenProps = {
@@ -37,6 +37,8 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
 
   const [showEditEventModal, setShowEditEventModal] = useState(false);
   const [focusedEvent, setFocusedEvent] = useState<string>("");
+  const focusedStartTime = scheduleJson.schedule.find((event: any) => event.id === focusedEvent)?.start_time;
+  const focusedEndTime = scheduleJson.schedule.find((event: any) => event.id === focusedEvent)?.end_time;
   const [focusedEventJson, setFocusedEventJson] = useState<any>({});
 
   const [sched, setSched] = useState(schedule.scheduleJson);
@@ -97,6 +99,22 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
       [id]: !prev[id], // Toggle only the selected text
     }));
   };
+
+  // check if time edits are valid
+  const timeInputValid = (time1: string, time2: string): boolean => {
+    return (
+    // check if times are actual times
+    checkTimeValid(time1) && 
+    checkTimeValid(time2) &&
+    // check if time2 > time1
+    compareTime(time1, time2) < 0
+    );
+  }
+
+  // validate form fields
+  const saveIsDisabled = (time1: string, time2: string): boolean => {
+    return !timeInputValid(time1, time2)
+  }
 
 
 
@@ -255,9 +273,17 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
                 saveEvent(updatedEvent);
               }}
             />
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          
+            <Text style={{color: 'red'}}>{!timeInputValid(focusedStartTime, focusedEndTime) && 'Time inputs invalid, please verify'}</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
               <View style={styles.buttonWrap}>
-                <Button title="Save" onPress={() => setShowEditEventModal(false)} />
+                <Button 
+                  title="Save" 
+                  onPress={() => setShowEditEventModal(false)} 
+                  disabled={saveIsDisabled(
+                    focusedStartTime,
+                    focusedEndTime)}
+                  />
               </View>
               <View style={styles.buttonWrap}>
                 <Button title="Cancel" onPress={() => setShowEditEventModal(false)} />
