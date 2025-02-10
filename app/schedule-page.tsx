@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Button, ScrollView } from "react-native";
+import { StyleSheet, Text, View, TextInput, Button, ScrollView, Modal, ActivityIndicator } from "react-native";
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { generateSchedule } from './generate';
@@ -12,6 +12,7 @@ type ScheduleScreenProps = {
 const ScheduleScreen = ({ navigation }: ScheduleScreenProps) => {
 
   const [inputs, setInputs] = useState(['', '', '']);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAddInput = () => {
     setInputs([...inputs, '']);
@@ -23,10 +24,12 @@ const ScheduleScreen = ({ navigation }: ScheduleScreenProps) => {
   };
 
   const handleGenerateSchedule = () => {
+    setIsLoading(true);
       const changes = "none"
       const response = generateSchedule(inputs, changes).then((response) => {
           console.log("gemini returned... " + response);
           navigation.navigate('GeneratedScreen', { navigation, scheduleJson: response });
+          setIsLoading(false)
       }).catch((error) => {
           console.error("Error generating schedule: ", error);
       });
@@ -66,11 +69,39 @@ const ScheduleScreen = ({ navigation }: ScheduleScreenProps) => {
         </View>
 
       </View>
+      {isLoading && <Modal
+        transparent={true}
+        animationType="fade">
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContent}>
+            <Text style={styles.loadingText}>Generating schedule based on your inputs...</Text>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        </View>
+
+      </Modal>}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '60%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: RFPercentage(1.5),
+    marginBottom: 20,
+  },
   container: {
     flex: 1,
     alignItems: "center",

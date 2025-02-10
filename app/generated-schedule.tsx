@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { View, Text, FlatList, StyleSheet, Modal, ScrollView, TextInput, Alert, Button, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Modal, ScrollView, TextInput, Alert, ActivityIndicator, Button, TouchableOpacity } from 'react-native';
 import dayjs from 'dayjs'; // Install this for date formatting: npm install dayjs
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { generateSchedule } from './generate';
@@ -40,6 +40,7 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
   const focusedStartTime = scheduleJson.schedule.find((event: any) => event.id === focusedEvent)?.start_time;
   const focusedEndTime = scheduleJson.schedule.find((event: any) => event.id === focusedEvent)?.end_time;
   const [focusedEventJson, setFocusedEventJson] = useState<any>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const [sched, setSched] = useState(schedule.scheduleJson);
   const [inputs, setInputs] = useState('');
@@ -63,13 +64,15 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
   }
 
   const handleRegenerateSchedule = () => {
+    setIsLoading(true)
     const oldInput = [schedule.scheduleJson.toString()];
     const response = generateSchedule(oldInput, inputs).then((response) => {
-        console.log("gemini returned... " + response);
         setSched(response)
         navigation.navigate('GeneratedScreen', { navigation, scheduleJson: response });
+        setIsLoading(false)
     }).catch((error) => {
         console.error("Error generating schedule: ", error);
+        setIsLoading(false)
     });
   }
 
@@ -185,6 +188,7 @@ const GeneratedScreen = ({ navigation }: GeneratedScreenProps) => {
 
       <View style={[{}]}>
         <View style={styles.inputRow}>
+        {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
         <View style={styles.buttonWrap}>
           <Button title="Regenerate" onPress={() => handleRegenerateSchedule()} />
         </View>
