@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, Button, ScrollView, Modal, ActivityIndicator } from "react-native";
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { NavigationProp } from '@react-navigation/native';
 import { generateSchedule } from './generate';
 import { RFPercentage } from 'react-native-responsive-fontsize';
 
@@ -20,15 +19,13 @@ const ScheduleScreen = ({ navigation }: ScheduleScreenProps) => {
 
   const handleRemoveEvent = () => {
     setInputs(inputs.slice(0, -1));
-    console.log("current inputs: " + inputs)
   };
 
   const handleGenerateSchedule = () => {
     setIsLoading(true);
       const changes = "none"
       const response = generateSchedule(inputs, changes).then((response) => {
-          console.log("gemini returned... " + response);
-          navigation.navigate('GeneratedScreen', { navigation, scheduleJson: response });
+          navigation.navigate('GeneratedScreen');
           setIsLoading(false)
       }).catch((error) => {
           console.error("Error generating schedule: ", error);
